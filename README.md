@@ -68,7 +68,7 @@ It merges **personal healthcare**, **AI guidance**, and **beautiful design** —
 
 ## Video Walkthrough
 
-[![Watch Video](C:\Users\paramita\OneDrive\Pictures\Screenshots\Screenshot 2025-11-13 181654.png)](https://drive.google.com/file/d/1w-gxgzWqPc_XmjhsUVvTXLtPgTKCFtIk/view?usp=sharing)
+[![Watch Video](https://github.com/Paramita-ghosh/MediSaathi/blob/main/Screenshot%202025-11-13%20181654.png)](https://drive.google.com/file/d/1w-gxgzWqPc_XmjhsUVvTXLtPgTKCFtIk/view?usp=sharing)
 
 ## 🚀 Future Enhancements
 
