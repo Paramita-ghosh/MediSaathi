@@ -76,9 +76,10 @@ It merges **personal healthcare**, **AI guidance**, and **beautiful design** —
 - Voice-based assistant
 - Offline support with PWA caching
 - Doctor dashboard for patient monitoring
-- Smart dosage prediction via AI
 
 ---
+
+## 🤝 Contributors
 
 | Name               | LinkedIn                                                          |
 | ------------------ | ----------------------------------------------------------------- |
