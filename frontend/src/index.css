@@ -1,0 +1,42 @@
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+/* Import Tailwind v4 styles (replaces @tailwind base/components/utilities) */
+@import "tailwindcss";
+
+/*
+  Tailwind v4 custom theme based on the provided screenshot.
+  - Teal-blue background
+  - Bright green-cyan accent
+  - White text
+*/
+@theme {
+  --colors-primary: #016064; /* The main teal-blue background from the image */
+  --colors-secondary: #408a89; /* A slightly darker shade for cards/containers */
+  --colors-accent: #52D3D8; /* The vibrant green/cyan button color */
+  --colors-accent-hover: #4ac0c5; /* A slightly darker shade for hover */
+  --colors-text-primary: #FFFAFA; /* Pure white text */
+  --colors-text-secondary: #E0E0E0; /* Light gray for secondary text */
+  --colors-border-color: #FFFFFF; /* White border for the secondary button */
+
+  --font-family-serif: "Cinzel Decorative", serif;
+  --font-family-sans: "Inter", sans-serif;
+}
+
+/* Custom base layer styles */
+@layer base {
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Apply the main background color to the body */
+    background-color: var(--colors-primary);
+    color: var(--colors-text-primary); /* Apply default text color */
+    font-family: var(--font-family-sans); /* Apply default font */
+  }
+
+  /* Apply serif font to headings */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-family-serif);
+  }
+}
+
