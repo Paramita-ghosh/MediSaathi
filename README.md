@@ -87,6 +87,8 @@ It merges **personal healthcare**, **AI guidance**, and **beautiful design** —
 | **Nishi Gupta**    | [LinkedIn](https://www.linkedin.com/in/nishi-gupta-299929344/)    |
 
 ---
+Contribution by Nishi Gupta
+Contribution by Paramita Ghosh
 
 ## 🌟 Show Your Support
 
