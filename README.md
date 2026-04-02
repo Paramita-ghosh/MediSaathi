@@ -89,6 +89,7 @@ It merges **personal healthcare**, **AI guidance**, and **beautiful design** —
 ---
 Contribution by Nishi Gupta
 Contribution by Paramita Ghosh
+echo "Contribution by nishi885" >> README.md
 
 ## 🌟 Show Your Support
 
