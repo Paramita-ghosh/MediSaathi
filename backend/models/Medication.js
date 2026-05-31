@@ -16,12 +16,12 @@ const medicationSchema = mongoose.Schema(
       required: true,
     },
     frequency: {
-      type: String, // e.g., 'Daily', 'Once in two days'
+      type: String, 
       required: true,
     },
     times: [
       {
-        type: String, // e.g., '09:00', '21:00'
+        type: String, 
       },
     ],
     history: [
