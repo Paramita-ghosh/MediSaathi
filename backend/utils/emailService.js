@@ -3,30 +3,19 @@ import sgMail from "@sendgrid/mail";
 
 dotenv.config();
 
-// Set the API key for SendGrid
-// This line looks for the SENDGRID_API_KEY in your backend/.env file
+
 console.log("Loaded API key starts with:", process.env.SENDGRID_API_KEY?.slice(0, 5));
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-/**
- * Sends a confirmation email when a new medication is added.
- * @param {string} userEmail - The email address of the user.
- * @param {string} userName - The name of the user.
- * @param {object} medication - The medication object that was just created.
- * @param {string} medication.name - The name of the medication.
- * @param {string} medication.dosage - The dosage (e.g., "50mg").
- * @param {string} medication.frequency - The frequency (e.g., "Twice a day").
- */
+
 export const sendMedicationConfirmation = async (
   userEmail,
   userName,
   medication
 ) => {
-  // --- IMPORTANT ---
-  // This 'from' email MUST be a "Verified Sender" in your SendGrid account.
-  // Go to SendGrid > Settings > Sender Authentication to verify your email.
-  const fromEmail = 'ghoshparamita0110@gmail.com'; // <--- !!! REPLACE THIS !!!
+  
+  const fromEmail = 'ghoshparamita0110@gmail.com'; 
 
   const msg = {
     to: userEmail,
