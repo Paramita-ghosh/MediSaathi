@@ -7,10 +7,11 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const AdherenceChart = ({ medications }) => {
+    const meds = medications ?? [];
     const [adherenceData, setAdherenceData] = useState({ taken: 0, missed: 0, adherenceRate: 0 });
 
     useEffect(() => {
-    const fetchAdherence = async () => {
+    async function fetchAdherence() {
         try {
         // ✅ 1. Get token from localStorage
         const userInfo = JSON.parse(localStorage.getItem("userInfo"));
@@ -39,10 +40,10 @@ const AdherenceChart = ({ medications }) => {
         } catch (error) {
         console.error("Error fetching adherence:", error);
         }
-    };
+    }
 
     fetchAdherence();
-    }, []);
+    }, [meds.length]);
 
 
     const localAdherenceData = {
@@ -50,8 +51,8 @@ const AdherenceChart = ({ medications }) => {
         missed: 0,
     };
 
-    medications.forEach(med => {
-        med.history.forEach(log => {
+    meds.forEach((med) => {
+        med.history?.forEach((log) => {
             if (log.status === 'taken') {
                 localAdherenceData.taken++;
             } else if (log.status === 'missed') {
@@ -63,12 +64,17 @@ const AdherenceChart = ({ medications }) => {
     const totalDoses = localAdherenceData.taken + localAdherenceData.missed;
     const adherenceRate = totalDoses > 0 ? ((localAdherenceData.taken / totalDoses) * 100).toFixed(0) : 0;
 
+    const combinedTaken = adherenceData.taken ?? localAdherenceData.taken;
+    const combinedMissed = adherenceData.missed ?? localAdherenceData.missed;
+    const combinedTotal = combinedTaken + combinedMissed;
+    const combinedAdherenceRate = adherenceData.adherenceRate ?? (combinedTotal > 0 ? Math.round((combinedTaken / combinedTotal) * 100) : 0);
+
     const data = {
         labels: ['Taken', 'Missed'],
         datasets: [
             {
                 label: 'Doses',
-                data: [localAdherenceData.taken, localAdherenceData.missed],
+                data: [combinedTaken, combinedMissed],
                 backgroundColor: ['#7C3AED', '#334155'], // Accent, Border color
                 borderColor: ['#1E293B', '#1E293B'], // Secondary
                 borderWidth: 2,
@@ -102,13 +108,13 @@ const AdherenceChart = ({ medications }) => {
 
     return (
         <div className="relative h-64 w-full flex items-center justify-center">
-             {totalDoses === 0 ? (
+             {combinedTotal === 0 ? (
                 <p className="text-text-secondary">No adherence data yet.</p>
              ) : (
                 <>
                     <Doughnut data={data} options={options} />
                     <div className="absolute flex flex-col items-center justify-center pointer-events-none">
-                        <span className="text-4xl font-bold text-text-primary">{adherenceRate}%</span>
+                        <span className="text-4xl font-bold text-text-primary">{combinedAdherenceRate}%</span>
                         <span className="text-sm text-text-secondary">Adherence</span>
                     </div>
                 </>

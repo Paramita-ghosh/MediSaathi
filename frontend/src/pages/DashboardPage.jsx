@@ -5,8 +5,6 @@ import AuthContext from '../context/AuthContext';
 // import { useNavigate } from 'react-router-dom'; // No longer needed here
 import MedicationList from '../components/dashboard/MedicationList';
 import AdherenceChart from '../components/dashboard/AdherenceChart';
-import Navbar from '../components/Layout/Navbar'; // adjust the path if needed
-import Chatbot from '../components/dashboard/Chatbot';
 import toast from 'react-hot-toast';
 
 const DashboardPage = () => {
@@ -43,7 +41,7 @@ const DashboardPage = () => {
 
     return (
   <div className="relative min-h-screen bg-linear-to-br from-[#0b0b12] via-[#141422] to-[#1c1c2e] overflow-hidden p-4 sm:p-6 lg:p-8">
-    <Navbar />
+
 
     {/* ✨ Animated glowing orbs */}
     <motion.div
@@ -87,7 +85,7 @@ const DashboardPage = () => {
       </motion.header>
 
       {/* --- Keep your original grid content unchanged --- */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -110,15 +108,6 @@ const DashboardPage = () => {
           </motion.div>
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="bg-[#1f1f2e]/80 backdrop-blur-lg p-6 rounded-2xl border border-[#2a2a40] shadow-[0_0_25px_rgba(186,85,211,0.3)]"
-        >
-          <h2 className="text-xl font-serif mb-4 text-pink-300">🔮 Oracle of Echoes</h2>
-          <Chatbot />
-        </motion.div>
       </div>
     </div>
   </div>

@@ -181,8 +181,21 @@ const getAdherenceStats = asyncHandler(async (req, res) => {
         });
 
         if (doseTime < now && !takenToday) {
-          // Log missed if not already
-          med.history.push({ date: doseTime, status: "missed" });
+          const missedAlready = med.history?.some((entry) => {
+            const entryDate = new Date(entry.date);
+            return (
+              entry.status === 'missed' &&
+              entryDate.getHours() === doseTime.getHours() &&
+              entryDate.getMinutes() === doseTime.getMinutes() &&
+              entryDate.getDate() === doseTime.getDate() &&
+              entryDate.getMonth() === doseTime.getMonth() &&
+              entryDate.getFullYear() === doseTime.getFullYear()
+            );
+          });
+
+          if (!missedAlready) {
+            med.history.push({ date: doseTime, status: 'missed' });
+          }
         }
       });
     }

@@ -1,6 +1,9 @@
 import express from 'express';
 import helmet from "helmet";
 import dotenv from 'dotenv';
+
+dotenv.config({ path: new URL('./.env', import.meta.url).pathname });
+
 import cors from 'cors';
 import cron from 'node-cron';
 import connectDB from './config/db.js';
@@ -12,7 +15,7 @@ import Medication from './models/Medication.js';
 import { sendReminderEmail } from './utils/emailService.js';
 
 
-dotenv.config();
+
 
 
 connectDB();

@@ -252,7 +252,37 @@ import { Link } from 'react-router-dom';
 import { GiPotionBall } from 'react-icons/gi';
 import toast from 'react-hot-toast';
 
-const MedicationList = ({ medications, isLoading, api, refetch }) => {
+const parseTimeToMinutes = (timeString) => {
+  if (!timeString) return null;
+  const [hours, minutes] = timeString.split(':').map((value) => Number(value));
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) return null;
+  return hours * 60 + minutes;
+};
+
+const getMedicationStatus = (med) => {
+  const times = Array.isArray(med.times)
+    ? med.times
+        .map((time) => ({ time, minutes: parseTimeToMinutes(time) }))
+        .filter((entry) => entry.minutes !== null)
+        .sort((a, b) => a.minutes - b.minutes)
+    : [];
+
+  const now = new Date();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const nextDose = times.find((entry) => entry.minutes >= currentMinutes);
+
+  if (nextDose) {
+    return { status: 'upcoming', displayTime: nextDose.time };
+  }
+
+  if (times.length > 0) {
+    return { status: 'missed', displayTime: times[times.length - 1].time };
+  }
+
+  return { status: 'unknown', displayTime: 'No schedule' };
+};
+
+const MedicationList = ({ medications = [], isLoading, api, refetch }) => {
   const handleTakeDose = async (medId) => {
     try {
       await api.post(`/api/medications/${medId}/log`, {
@@ -260,68 +290,107 @@ const MedicationList = ({ medications, isLoading, api, refetch }) => {
         status: 'taken',
       });
       toast.success('Dose logged!');
-      refetch(); // Refetch data to update adherence chart
+      refetch();
     } catch (error) {
       toast.error('Failed to log dose.');
     }
   };
-  
-  const today = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
 
-  // Find medications that have scheduled times for today and are upcoming
-  const upcomingMedications = medications
-    .filter(med => med.times.some(time => time >= today))
-    .sort((a, b) => a.times.find(time => time >= today) > b.times.find(time => time >= today) ? 1 : -1);
+  const medsWithStatus = (Array.isArray(medications) ? medications : []).map((med) => ({
+    ...med,
+    ...getMedicationStatus(med),
+  }));
+
+  const upcomingMedications = medsWithStatus.filter((med) => med.status === 'upcoming');
+  const missedMedications = medsWithStatus.filter((med) => med.status === 'missed');
 
   if (isLoading) {
     return <div className="text-text-secondary text-center py-4">Loading potions...</div>;
   }
-  
+
   return (
-    <div className="space-y-4">
-      {upcomingMedications.length > 0 ? (
-        upcomingMedications.map((med, index) => (
-          <motion.div
-            key={med._id}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.3, delay: index * 0.1 }}
-            className="bg-primary p-4 rounded-lg flex justify-between items-center border border-border-color"
-          >
-            <div className="flex items-center gap-4">
-              <GiPotionBall className="text-accent text-3xl" />
-              <div>
-                <p className="font-bold text-text-primary">{med.name} ({med.dosage})</p>
-                <p className="text-sm text-text-secondary">Next dose at {med.times.find(time => time >= today)}</p>
-              </div>
-            </div>
-            <motion.button 
-              onClick={() => handleTakeDose(med._id)}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent-hover transition-colors"
+    <div className="space-y-6">
+      {upcomingMedications.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-lg font-semibold text-text-primary">Upcoming Doses</h3>
+          {upcomingMedications.map((med, index) => (
+            <motion.div
+              key={med._id}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.08 }}
+              className="bg-primary p-4 rounded-xl flex flex-col sm:flex-row sm:justify-between sm:items-center border border-border-color"
             >
-              Take
-            </motion.button>
-          </motion.div>
-        ))
-      ) : (
-        <div className="text-center text-text-secondary py-8">
-            <p>No upcoming medications for today.</p>
-            <p>Your grimoire is clear.</p>
+              <div className="flex items-start gap-4">
+                <GiPotionBall className="text-accent text-3xl mt-1" />
+                <div>
+                  <p className="font-bold text-text-primary">{med.name} ({med.dosage})</p>
+                  <p className="text-sm text-text-secondary">Next dose at {med.displayTime}</p>
+                </div>
+              </div>
+              <div className="mt-4 sm:mt-0 flex items-center gap-3">
+                <span className="px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-300 text-xs font-medium uppercase tracking-wide">
+                  Upcoming
+                </span>
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={() => handleTakeDose(med._id)}
+                  className="bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent-hover transition-colors"
+                >
+                  Log Taken
+                </motion.button>
+              </div>
+            </motion.div>
+          ))}
         </div>
       )}
+
+      {missedMedications.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-lg font-semibold text-text-primary">Missed Doses</h3>
+          {missedMedications.map((med, index) => (
+            <motion.div
+              key={med._id}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.08 }}
+              className="bg-[#2e1f2f] p-4 rounded-xl flex flex-col sm:flex-row sm:justify-between sm:items-center border border-red-600/40"
+            >
+              <div className="flex items-start gap-4">
+                <GiPotionBall className="text-red-400 text-3xl mt-1" />
+                <div>
+                  <p className="font-bold text-text-primary">{med.name} ({med.dosage})</p>
+                  <p className="text-sm text-text-secondary">Missed at {med.displayTime}</p>
+                </div>
+              </div>
+              <span className="mt-4 sm:mt-0 inline-flex items-center px-3 py-1 rounded-full bg-red-500/15 text-red-300 text-xs font-medium uppercase tracking-wide">
+                Missed
+              </span>
+            </motion.div>
+          ))}
+        </div>
+      )}
+
+      {upcomingMedications.length === 0 && missedMedications.length === 0 && (
+        <div className="text-center text-text-secondary py-8">
+          <p>No scheduled medications for today.</p>
+          <p>Check your schedule or add a new potion.</p>
+        </div>
+      )}
+
       <Link to="/schedule">
         <button className="mt-4 w-full flex items-center justify-center gap-2 bg-secondary text-text-primary px-4 py-3 rounded-lg hover:bg-border-color transition-colors border border-dashed border-border-color">
-            <FaPlus />
-            Manage Medication Schedule
+          <FaPlus />
+          Manage Medication Schedule
         </button>
       </Link>
     </div>
   );
 };
 
-export default MedicationList; 
+export default MedicationList;
+
 
 
 

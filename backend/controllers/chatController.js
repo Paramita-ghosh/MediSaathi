@@ -1,12 +1,14 @@
 
 import axios from "axios";
+import dotenv from "dotenv";
+
+dotenv.config({ path: new URL('../.env', import.meta.url).pathname });
 
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
-const GROQ_API_KEY = process.env.GROQ_API_KEY;
-const GROQ_MODEL = process.env.GROQ_MODEL || "llama-3.1-8b-instant"; 
-
 
 const generateChatResponse = async (req, res) => {
+  const GROQ_API_KEY = process.env.GROQ_API_KEY;
+  const GROQ_MODEL = process.env.GROQ_MODEL || "llama-3.1-8b-instant";
   const { prompt } = req.body;
 
 
