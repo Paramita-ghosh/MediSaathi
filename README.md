@@ -74,7 +74,7 @@ MediSaathi/
 
 - The application uses Nodemailer for email reminders and confirmation emails.
 - The community module supports post creation, listing posts, and liking posts.
-- The chat feature was present in the codebase but is currently removed from the dashboard UI.
+
 
 ---
 
