@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE = "http://localhost:5000"; // ✅ backend URL
+const API_BASE = "VITE_API_URL=https://medisaathi-t1eb.onrender.com||http://localhost:5000"; // ✅ backend URL
 
 // ✅ Helper to always fetch the latest token from localStorage
 const getAuthConfig = () => {
