@@ -245,12 +245,13 @@
 
 // export default MedicationList;
 
-import React from 'react';
+import React, { useContext } from 'react';
 import { motion } from 'framer-motion';
 import { FaPlus } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { GiPotionBall } from 'react-icons/gi';
 import toast from 'react-hot-toast';
+import AuthContext from '../../context/AuthContext';
 
 const parseTimeToMinutes = (timeString) => {
   if (!timeString) return null;
@@ -283,13 +284,27 @@ const getMedicationStatus = (med) => {
 };
 
 const MedicationList = ({ medications = [], isLoading, api, refetch }) => {
+  const { setUser } = useContext(AuthContext);
+
   const handleTakeDose = async (medId) => {
     try {
-      await api.post(`/api/medications/${medId}/log`, {
+      const { data } = await api.post(`/api/medications/${medId}/log`, {
         date: new Date().toISOString(),
         status: 'taken',
       });
+
       toast.success('Dose logged!');
+
+      if (data.awardedBadges?.length > 0) {
+        data.awardedBadges.forEach((badge) => {
+          toast.success(`Badge unlocked: ${badge}`);
+        });
+      }
+
+      if (setUser && data.badges) {
+        setUser((prevUser) => ({ ...prevUser, badges: data.badges, currentStreak: data.currentStreak }));
+      }
+
       refetch();
     } catch (error) {
       toast.error('Failed to log dose.');

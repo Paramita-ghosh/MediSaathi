@@ -16,6 +16,17 @@ const userSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    badges: {
+      type: [String],
+      default: [],
+    },
+    currentStreak: {
+      type: Number,
+      default: 0,
+    },
+    lastDoseLoggedAt: {
+      type: Date,
+    },
   },
   {
     timestamps: true,

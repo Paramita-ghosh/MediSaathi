@@ -24,6 +24,8 @@ const registerUser = async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
+      badges: user.badges,
+      currentStreak: user.currentStreak,
       token: generateToken(user._id),
     });
   } else {
@@ -41,6 +43,8 @@ const authUser = async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
+      badges: user.badges,
+      currentStreak: user.currentStreak,
       token: generateToken(user._id),
     });
   } else {
@@ -57,6 +61,8 @@ const getUserProfile = async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
+      badges: user.badges,
+      currentStreak: user.currentStreak,
     });
   } else {
     res.status(404).json({ message: 'User not found' });

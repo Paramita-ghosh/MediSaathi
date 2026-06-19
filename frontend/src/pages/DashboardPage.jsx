@@ -84,6 +84,29 @@ const DashboardPage = () => {
         </p>
       </motion.header>
 
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4"
+      >
+        <div className="rounded-3xl bg-[#1d1631]/90 border border-[#5f4aa2]/30 p-6 shadow-xl">
+          <p className="text-sm uppercase tracking-[0.24em] text-violet-300 mb-3">Current Streak</p>
+          <p className="text-4xl font-bold text-white">{user?.currentStreak || 0}</p>
+          <p className="mt-2 text-sm text-gray-400">Days with logged doses in a row</p>
+        </div>
+        <div className="rounded-3xl bg-[#1d1631]/90 border border-[#5f4aa2]/30 p-6 shadow-xl">
+          <p className="text-sm uppercase tracking-[0.24em] text-violet-300 mb-3">Earned Badges</p>
+          <p className="text-xl font-semibold text-white">{user?.badges?.length || 0}</p>
+          <p className="mt-2 text-sm text-gray-400">Collect more badges by logging doses</p>
+        </div>
+        <div className="rounded-3xl bg-[#1d1631]/90 border border-[#5f4aa2]/30 p-6 shadow-xl">
+          <p className="text-sm uppercase tracking-[0.24em] text-violet-300 mb-3">Next Reward</p>
+          <p className="text-xl font-semibold text-white">{user?.currentStreak >= 3 ? '7-Day Guardian' : '3-Day Streak'}</p>
+          <p className="mt-2 text-sm text-gray-400">Keep logging for more rewards</p>
+        </div>
+      </motion.div>
+
       {/* --- Keep your original grid content unchanged --- */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="lg:col-span-2 space-y-6">

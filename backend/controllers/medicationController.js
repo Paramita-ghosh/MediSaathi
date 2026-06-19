@@ -136,17 +136,67 @@ const logDose = asyncHandler(async (req, res) => {
     medication.history = [];
   }
 
+  const user = await User.findById(req.user.id);
+  if (!user) {
+    res.status(404);
+    throw new Error('User not found');
+  }
+
   const dateToLog = new Date(timeTaken);
   medication.history.push({
     date: dateToLog,
     status: 'taken',
   });
 
-  await medication.save();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const lastDose = user.lastDoseLoggedAt ? new Date(user.lastDoseLoggedAt) : null;
+  const wasLoggedToday = lastDose && lastDose.toDateString() === new Date().toDateString();
+  let streakUpdated = user.currentStreak || 0;
+
+  if (!wasLoggedToday) {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (lastDose && lastDose.toDateString() === yesterday.toDateString()) {
+      streakUpdated = (user.currentStreak || 0) + 1;
+    } else {
+      streakUpdated = 1;
+    }
+
+    user.currentStreak = streakUpdated;
+    user.lastDoseLoggedAt = dateToLog;
+  }
+
+  if (!Array.isArray(user.badges)) {
+    user.badges = [];
+  }
+
+  const awardedBadges = [];
+  if (!user.badges.includes('Bronze Dose')) {
+    user.badges.push('Bronze Dose');
+    awardedBadges.push('Bronze Dose');
+  }
+
+  if (streakUpdated >= 3 && !user.badges.includes('3-Day Streak')) {
+    user.badges.push('3-Day Streak');
+    awardedBadges.push('3-Day Streak');
+  }
+
+  if (streakUpdated >= 7 && !user.badges.includes('7-Day Guardian')) {
+    user.badges.push('7-Day Guardian');
+    awardedBadges.push('7-Day Guardian');
+  }
+
+  await Promise.all([medication.save(), user.save()]);
+
   res.status(201).json({
     success: true,
     message: 'Dose logged successfully',
     medication,
+    currentStreak: user.currentStreak,
+    badges: user.badges,
+    awardedBadges,
   });
 });
 

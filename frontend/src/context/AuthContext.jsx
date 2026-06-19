@@ -11,6 +11,13 @@ export const AuthProvider = ({ children }) => {
     baseURL: import.meta.env.VITE_API_URL,
   });
 
+  React.useEffect(() => {
+    if (user) {
+      const persistedUser = { ...user };
+      localStorage.setItem('userInfo', JSON.stringify(persistedUser));
+    }
+  }, [user]);
+
   api.interceptors.request.use((config) => {
     const token = localStorage.getItem('authToken');
     if (token) {
@@ -80,7 +87,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, register, loading, api }}>
+    <AuthContext.Provider value={{ user, login, logout, register, loading, api, setUser }}>
       {!loading && children}
     </AuthContext.Provider>
   );

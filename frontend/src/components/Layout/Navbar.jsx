@@ -72,6 +72,7 @@ import { motion } from 'framer-motion';
 import AuthContext from '../../context/AuthContext';
 import { GiCauldron } from 'react-icons/gi';
 import { FiLogOut, FiLayout, FiCalendar, FiUsers, FiInfo } from 'react-icons/fi';
+import { FiAward } from 'react-icons/fi';
 
 const Navbar = () => {
     const { user, logout } = useContext(AuthContext);
@@ -130,6 +131,13 @@ const Navbar = () => {
                 >
                     <FiInfo />
                     <span>About</span>
+                </NavLink>
+                <NavLink 
+                    to="/badges" 
+                    className={({ isActive }) => `${linkStyle} ${isActive ? activeLinkStyle : ""}`}
+                >
+                    <FiAward />
+                    <span>Badges</span>
                 </NavLink>
                 <NavLink 
                     to="/community" 

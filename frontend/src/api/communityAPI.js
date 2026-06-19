@@ -1,14 +1,14 @@
 import axios from "axios";
 
-const API_BASE = "VITE_API_URL=https://medisaathi-t1eb.onrender.com||http://localhost:5000"; // ✅ backend URL
+// Use Vite environment variable `VITE_API_URL` when available, otherwise fallback to localhost
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
-// ✅ Helper to always fetch the latest token from localStorage
 const getAuthConfig = () => {
   const token = localStorage.getItem("authToken");
   return {
     headers: {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}), // only if token exists
+      ...(token ? { Authorization: `Bearer ${token}` } : {}), 
     },
     withCredentials: true,
   };
