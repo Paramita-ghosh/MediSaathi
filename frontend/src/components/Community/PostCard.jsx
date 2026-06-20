@@ -41,8 +41,25 @@ const PostCard = ({ post, onLike }) => {
       <p className="text-sm text-gray-300 mb-3 leading-relaxed">
         {post.content}
       </p>
-      <div className="flex justify-between items-center text-xs md:text-sm text-gray-400">
+      {post.summary && (
+        <div className="mb-3 rounded-xl border border-purple-600/40 bg-[#111118]/80 p-3">
+          <span className="text-[11px] uppercase tracking-[0.25em] text-purple-300 opacity-80">
+            Summary
+          </span>
+          <p className="mt-2 text-sm text-gray-200">{post.summary}</p>
+        </div>
+      )}
+      <div className="flex flex-wrap justify-between items-center gap-2 text-xs md:text-sm text-gray-400">
         <span className="italic">— {post.author?.name || "Anonymous Sage"}</span>
+        <span className={`rounded-full px-2 py-1 text-[11px] uppercase tracking-[0.2em] ${
+          post.sentiment === "positive"
+            ? "bg-emerald-400/10 text-emerald-300"
+            : post.sentiment === "negative"
+            ? "bg-rose-400/10 text-rose-300"
+            : "bg-slate-400/10 text-slate-300"
+        }`}>
+          {post.sentiment ? post.sentiment.toUpperCase() : "NEUTRAL"}
+        </span>
         <motion.button
           whileTap={{ scale: 0.9 }}
           whileHover={{ color: "#f87171", scale: 1.05 }}

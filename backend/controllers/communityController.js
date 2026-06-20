@@ -1,16 +1,30 @@
 import Post from "../models/postModel.js";
+import { summarizePostContent } from "../utils/geminiService.js";
 
 // 🧾 Create a new post
 export const createPost = async (req, res) => {
   try {
     const { title, content } = req.body;
-    const post = await Post.create({
+    const post = new Post({
       title,
       content,
       author: req.user._id,
+      summary: content.length > 220 ? `${content.slice(0, 220)}...` : content,
+      sentiment: "neutral",
     });
+
+    try {
+      const geminiResult = await summarizePostContent(content);
+      if (geminiResult?.summary) post.summary = geminiResult.summary;
+      if (geminiResult?.sentiment) post.sentiment = geminiResult.sentiment;
+    } catch (innerError) {
+      console.error("Gemini summarization failed:", innerError);
+    }
+
+    await post.save();
     res.status(201).json(post);
   } catch (error) {
+    console.error("Create post error:", error);
     res.status(500).json({ message: "Failed to create post" });
   }
 };
