@@ -30,6 +30,7 @@ import {
   deleteMedication,
   logDose,
   getAdherenceStats,
+  suggestDoctors,
 } from '../controllers/medicationController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
@@ -49,6 +50,7 @@ router
 router.route('/:id/log').post(protect, logDose);
 
 router.route('/adherence').get(protect, getAdherenceStats);
+router.route('/doctor-suggestions').post(protect, suggestDoctors);
 
 export default router;
 

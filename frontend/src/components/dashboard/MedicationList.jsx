@@ -245,13 +245,15 @@
 
 // export default MedicationList;
 
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaPlus } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { GiPotionBall } from 'react-icons/gi';
 import toast from 'react-hot-toast';
 import AuthContext from '../../context/AuthContext';
+
+const MISSED_GRACE_PERIOD_MINUTES = 10;
 
 const parseTimeToMinutes = (timeString) => {
   if (!timeString) return null;
@@ -260,7 +262,22 @@ const parseTimeToMinutes = (timeString) => {
   return hours * 60 + minutes;
 };
 
-const getMedicationStatus = (med) => {
+const getMedicationStatus = (med, now) => {
+  const hasTakenToday = med.history?.some((entry) => {
+    const entryDate = new Date(entry.date);
+
+    return (
+      entry.status === 'taken' &&
+      entryDate.getDate() === now.getDate() &&
+      entryDate.getMonth() === now.getMonth() &&
+      entryDate.getFullYear() === now.getFullYear()
+    );
+  });
+
+  if (hasTakenToday) {
+    return { status: 'taken', displayTime: 'Taken today' };
+  }
+
   const times = Array.isArray(med.times)
     ? med.times
         .map((time) => ({ time, minutes: parseTimeToMinutes(time) }))
@@ -268,16 +285,36 @@ const getMedicationStatus = (med) => {
         .sort((a, b) => a.minutes - b.minutes)
     : [];
 
-  const now = new Date();
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
-  const nextDose = times.find((entry) => entry.minutes >= currentMinutes);
+  const doseInGracePeriod = [...times]
+    .reverse()
+    .find(
+      (entry) =>
+        currentMinutes >= entry.minutes &&
+        currentMinutes < entry.minutes + MISSED_GRACE_PERIOD_MINUTES
+    );
+
+  if (doseInGracePeriod) {
+    return {
+      status: 'due',
+      displayTime: doseInGracePeriod.time,
+      minutesRemaining:
+        doseInGracePeriod.minutes + MISSED_GRACE_PERIOD_MINUTES - currentMinutes,
+    };
+  }
+
+  const missedDose = [...times]
+    .reverse()
+    .find((entry) => currentMinutes >= entry.minutes + MISSED_GRACE_PERIOD_MINUTES);
+
+  if (missedDose) {
+    return { status: 'missed', displayTime: missedDose.time };
+  }
+
+  const nextDose = times.find((entry) => entry.minutes > currentMinutes);
 
   if (nextDose) {
     return { status: 'upcoming', displayTime: nextDose.time };
-  }
-
-  if (times.length > 0) {
-    return { status: 'missed', displayTime: times[times.length - 1].time };
   }
 
   return { status: 'unknown', displayTime: 'No schedule' };
@@ -285,6 +322,12 @@ const getMedicationStatus = (med) => {
 
 const MedicationList = ({ medications = [], isLoading, api, refetch }) => {
   const { setUser } = useContext(AuthContext);
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 30 * 1000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   const handleTakeDose = async (medId) => {
     try {
@@ -313,11 +356,13 @@ const MedicationList = ({ medications = [], isLoading, api, refetch }) => {
 
   const medsWithStatus = (Array.isArray(medications) ? medications : []).map((med) => ({
     ...med,
-    ...getMedicationStatus(med),
+    ...getMedicationStatus(med, now),
   }));
 
   const upcomingMedications = medsWithStatus.filter((med) => med.status === 'upcoming');
+  const dueMedications = medsWithStatus.filter((med) => med.status === 'due');
   const missedMedications = medsWithStatus.filter((med) => med.status === 'missed');
+  const takenMedications = medsWithStatus.filter((med) => med.status === 'taken');
 
   if (isLoading) {
     return <div className="text-text-secondary text-center py-4">Loading potions...</div>;
@@ -325,6 +370,39 @@ const MedicationList = ({ medications = [], isLoading, api, refetch }) => {
 
   return (
     <div className="space-y-6">
+      {dueMedications.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-lg font-semibold text-text-primary">Due Now</h3>
+          {dueMedications.map((med, index) => (
+            <motion.div
+              key={med._id}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.08 }}
+              className="bg-[#302a1f] p-4 rounded-xl flex flex-col sm:flex-row sm:justify-between sm:items-center border border-amber-500/40"
+            >
+              <div className="flex items-start gap-4">
+                <GiPotionBall className="text-amber-300 text-3xl mt-1" />
+                <div>
+                  <p className="font-bold text-text-primary">{med.name} ({med.dosage})</p>
+                  <p className="text-sm text-text-secondary">
+                    Due at {med.displayTime}. Missed after {med.minutesRemaining} minute{med.minutesRemaining === 1 ? '' : 's'}.
+                  </p>
+                </div>
+              </div>
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.96 }}
+                onClick={() => handleTakeDose(med._id)}
+                className="mt-4 sm:mt-0 bg-amber-400 text-slate-950 px-4 py-2 rounded-lg font-semibold hover:bg-amber-300 transition-colors"
+              >
+                Log Taken
+              </motion.button>
+            </motion.div>
+          ))}
+        </div>
+      )}
+
       {upcomingMedications.length > 0 && (
         <div className="space-y-3">
           <h3 className="text-lg font-semibold text-text-primary">Upcoming Doses</h3>
@@ -387,7 +465,33 @@ const MedicationList = ({ medications = [], isLoading, api, refetch }) => {
         </div>
       )}
 
-      {upcomingMedications.length === 0 && missedMedications.length === 0 && (
+      {takenMedications.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-lg font-semibold text-text-primary">Taken Today</h3>
+          {takenMedications.map((med, index) => (
+            <motion.div
+              key={med._id}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.08 }}
+              className="bg-[#1f2e2a] p-4 rounded-xl flex flex-col sm:flex-row sm:justify-between sm:items-center border border-emerald-500/35"
+            >
+              <div className="flex items-start gap-4">
+                <GiPotionBall className="text-emerald-300 text-3xl mt-1" />
+                <div>
+                  <p className="font-bold text-text-primary">{med.name} ({med.dosage})</p>
+                  <p className="text-sm text-text-secondary">{med.displayTime}</p>
+                </div>
+              </div>
+              <span className="mt-4 sm:mt-0 inline-flex items-center px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-300 text-xs font-medium uppercase tracking-wide">
+                Taken
+              </span>
+            </motion.div>
+          ))}
+        </div>
+      )}
+
+      {upcomingMedications.length === 0 && dueMedications.length === 0 && missedMedications.length === 0 && takenMedications.length === 0 && (
         <div className="text-center text-text-secondary py-8">
           <p>No scheduled medications for today.</p>
           <p>Check your schedule or add a new potion.</p>

@@ -2,12 +2,15 @@ import Medication from '../models/Medication.js';
 import User from '../models/User.js';
 import asyncHandler from 'express-async-handler';
 import { sendMedicationConfirmation } from '../utils/emailService.js';
+import { getDoctorSuggestionsForMedication } from '../utils/doctorSuggestionService.js';
+
+const MISSED_GRACE_PERIOD_MINUTES = 10;
 
 // @desc    Get all medications for a user
 // @route   GET /api/medications
 // @access  Private
 const getMedications = asyncHandler(async (req, res) => {
-  const medications = await Medication.find({ user: req.user.id });
+  const medications = await Medication.find({ user: req.user.id }).sort({ createdAt: -1 });
 
   // Get today’s start and end time
   const todayStart = new Date();
@@ -33,14 +36,14 @@ const getMedications = asyncHandler(async (req, res) => {
     return !takenToday; // show only if NOT taken today
   });
 
-  res.status(200).json(filteredMeds);
+  res.status(200).json(medications);
 });
 
 // @desc    Create a new medication
 // @route   POST /api/medications
 // @access  Private
 const createMedication = asyncHandler(async (req, res) => {
-  const { name, dosage, frequency, times } = req.body;
+  const { name, dosage, frequency, times, latitude, longitude } = req.body;
 
   if (!name || !dosage || !frequency || !times) {
     res.status(400);
@@ -68,7 +71,19 @@ const createMedication = asyncHandler(async (req, res) => {
     console.error('Failed to send email in background:', err);
   });
 
-  res.status(201).json(createdMedication);
+  const response = createdMedication.toObject();
+
+  try {
+    response.doctorSuggestion = await getDoctorSuggestionsForMedication({
+      medicineName: name,
+      latitude,
+      longitude,
+    });
+  } catch (error) {
+    console.error('Failed to create doctor suggestion:', error);
+  }
+
+  res.status(201).json(response);
 });
 
 // @desc    Update a medication
@@ -218,19 +233,26 @@ const getAdherenceStats = asyncHandler(async (req, res) => {
         const [hour, minute] = time.split(':').map(Number);
         const doseTime = new Date();
         doseTime.setHours(hour, minute, 0, 0);
+        const missedAfter = new Date(
+          doseTime.getTime() + MISSED_GRACE_PERIOD_MINUTES * 60 * 1000
+        );
 
-        // Check if no "taken" entry exists for that time today
+        // Allow the user ten minutes after the scheduled time to log the dose.
         const takenToday = med.history?.some((entry) => {
           const entryDate = new Date(entry.date);
           return (
             entry.status === "taken" &&
-            entryDate.getHours() === doseTime.getHours() &&
-            entryDate.getDate() === now.getDate() &&
-            entryDate.getMonth() === now.getMonth()
+            entryDate.getFullYear() === doseTime.getFullYear() &&
+            entryDate.getMonth() === doseTime.getMonth() &&
+            entryDate.getDate() === doseTime.getDate() &&
+            (
+              entryDate.getHours() === doseTime.getHours() ||
+              (entryDate >= doseTime && entryDate <= missedAfter)
+            )
           );
         });
 
-        if (doseTime < now && !takenToday) {
+        if (now >= missedAfter && !takenToday) {
           const missedAlready = med.history?.some((entry) => {
             const entryDate = new Date(entry.date);
             return (
@@ -265,6 +287,26 @@ const getAdherenceStats = asyncHandler(async (req, res) => {
   res.status(200).json({ taken, missed, adherenceRate, medications });
 });
 
+// @desc    Suggest doctor specialty and nearby doctors for a medicine
+// @route   POST /api/medications/doctor-suggestions
+// @access  Private
+const suggestDoctors = asyncHandler(async (req, res) => {
+  const { medicineName, latitude, longitude } = req.body;
+
+  if (!medicineName) {
+    res.status(400);
+    throw new Error('Medicine name is required');
+  }
+
+  const suggestion = await getDoctorSuggestionsForMedication({
+    medicineName,
+    latitude,
+    longitude,
+  });
+
+  res.status(200).json(suggestion);
+});
+
 
 
 export {
@@ -274,4 +316,5 @@ export {
   deleteMedication,
   logDose,
   getAdherenceStats,
+  suggestDoctors,
 };

@@ -103,3 +103,64 @@ ${content}
     };
   }
 };
+
+const specialtyFallbacks = [
+  {
+    specialty: "Gastroenterologist",
+    keywords: ["loose motion", "diarrhea", "vomit", "stomach", "acidity", "gas", "constipation", "norflox", "entroquinol", "loperamide"],
+  },
+  {
+    specialty: "Endocrinologist",
+    keywords: ["diabetes", "sugar", "insulin", "metformin", "thyroid", "levothyroxine"],
+  },
+  {
+    specialty: "Cardiologist",
+    keywords: ["blood pressure", "bp", "amlodipine", "atenolol", "telmisartan", "heart", "chest pain"],
+  },
+  {
+    specialty: "Dermatologist",
+    keywords: ["skin", "rash", "itch", "acne", "cream", "ointment", "fungal", "clotrimazole"],
+  },
+  {
+    specialty: "Pulmonologist",
+    keywords: ["asthma", "inhaler", "cough", "breathing", "wheezing", "salbutamol"],
+  },
+  {
+    specialty: "Neurologist",
+    keywords: ["migraine", "seizure", "epilepsy", "headache", "vertigo"],
+  },
+  {
+    specialty: "Orthopedic Doctor",
+    keywords: ["joint", "bone", "back pain", "knee", "muscle", "diclofenac", "painkiller"],
+  },
+  {
+    specialty: "ENT Specialist",
+    keywords: ["ear", "nose", "throat", "sinus", "tonsil"],
+  },
+  {
+    specialty: "General Physician",
+    keywords: ["fever", "paracetamol", "azithromycin", "antibiotic", "infection", "cold", "flu"],
+  },
+];
+
+const getFallbackSpecialty = (medicineName = "") => {
+  const normalized = medicineName.toLowerCase();
+  const match = specialtyFallbacks.find(({ keywords }) =>
+    keywords.some((keyword) => normalized.includes(keyword))
+  );
+
+  return match?.specialty || "General Physician";
+};
+
+export const getDoctorSpecialtyForMedication = async (medicineName) => {
+  const fallbackSpecialty = getFallbackSpecialty(medicineName);
+
+  return {
+    specialty: fallbackSpecialty,
+    reason:
+      fallbackSpecialty === "General Physician"
+        ? "A general physician is the safest starting point when the medicine purpose is uncertain."
+        : "This is a broad specialty starting point based on the medicine category.",
+    source: "controlled_mapping",
+  };
+};

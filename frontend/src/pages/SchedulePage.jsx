@@ -3,14 +3,34 @@ import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import AuthContext from '../context/AuthContext';
 import { FaTrash, FaPencilAlt, FaPlus, FaClock } from 'react-icons/fa';
+import DoctorSuggestionCard from '../components/dashboard/DoctorSuggestionCard';
 // import { Link } from 'react-router-dom'; // No longer needed
 // import { FiArrowLeft } from 'react-icons/fi'; // No longer needed
+
+const getCurrentLocation = () =>
+    new Promise((resolve) => {
+        if (!navigator.geolocation) {
+            resolve(null);
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            (position) =>
+                resolve({
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
+                }),
+            () => resolve(null),
+            { enableHighAccuracy: false, timeout: 6000, maximumAge: 300000 }
+        );
+    });
 
 const SchedulePage = () => {
     const { api } = useContext(AuthContext);
     const [medications, setMedications] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
+    const [doctorSuggestion, setDoctorSuggestion] = useState(null);
 
     // Form state
     const [name, setName] = useState('');
@@ -59,7 +79,15 @@ const SchedulePage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await api.post('/api/medications', { name, dosage, frequency, times });
+            const location = await getCurrentLocation();
+            const { data } = await api.post('/api/medications', {
+                name,
+                dosage,
+                frequency,
+                times,
+                ...location,
+            });
+            setDoctorSuggestion(data.doctorSuggestion || null);
             toast.success(`${name} added to your schedule!`);
             resetForm();
             fetchMedications();
@@ -134,6 +162,19 @@ const SchedulePage = () => {
       <p className="text-gray-400 italic mb-6 text-center">
         “Record your arcane brews and their celestial timings.”
       </p>
+
+      <AnimatePresence>
+        {doctorSuggestion && (
+          <motion.div
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            className="mb-6"
+          >
+            <DoctorSuggestionCard suggestion={doctorSuggestion} />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* 🧙 Original code begins below - unchanged */}
       <AnimatePresence>

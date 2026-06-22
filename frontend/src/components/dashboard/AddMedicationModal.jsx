@@ -4,6 +4,24 @@ import { X, Pill, Clock, Calendar } from 'lucide-react';
 import toast from 'react-hot-toast';
 import axios from 'axios';
 
+const getCurrentLocation = () =>
+  new Promise((resolve) => {
+    if (!navigator.geolocation) {
+      resolve(null);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) =>
+        resolve({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        }),
+      () => resolve(null),
+      { enableHighAccuracy: false, timeout: 6000, maximumAge: 300000 }
+    );
+  });
+
 const AddMedicationModal = ({ token, onClose, onMedicationAdded }) => {
   const [name, setName] = useState('');
   const [dosage, setDosage] = useState('');
@@ -18,16 +36,21 @@ const AddMedicationModal = ({ token, onClose, onMedicationAdded }) => {
       const config = {
         headers: { Authorization: `Bearer ${token}` },
       };
+      const location = await getCurrentLocation();
       const medicationData = {
         name,
         dosage,
         frequency,
         times: times.filter(t => t), // Send only non-empty times
+        ...location,
       };
 
       const { data } = await axios.post('/api/medications', medicationData, config);
       
       toast.success('New potion added!', { id: toastId });
+      if (data.doctorSuggestion?.specialty) {
+        toast.success(`Suggested doctor: ${data.doctorSuggestion.specialty}`);
+      }
       onMedicationAdded(data); // Update the dashboard list
       onClose(); // Close the modal
 
