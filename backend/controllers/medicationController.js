@@ -6,9 +6,7 @@ import { getDoctorSuggestionsForMedication } from '../utils/doctorSuggestionServ
 
 const MISSED_GRACE_PERIOD_MINUTES = 10;
 
-// @desc    Get all medications for a user
-// @route   GET /api/medications
-// @access  Private
+
 const getMedications = asyncHandler(async (req, res) => {
   const medications = await Medication.find({ user: req.user.id }).sort({ createdAt: -1 });
 

@@ -40,6 +40,9 @@ router
   .get(protect, getMedications)
   .post(protect, createMedication); // <-- And here
 
+router.route('/adherence').get(protect, getAdherenceStats);
+router.route('/doctor-suggestions').post(protect, suggestDoctors);
+
 // /api/medications/:id
 router
   .route('/:id')
@@ -48,9 +51,6 @@ router
 
 // /api/medications/:id/log
 router.route('/:id/log').post(protect, logDose);
-
-router.route('/adherence').get(protect, getAdherenceStats);
-router.route('/doctor-suggestions').post(protect, suggestDoctors);
 
 export default router;
 

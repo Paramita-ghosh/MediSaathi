@@ -127,7 +127,7 @@ const DashboardPage = () => {
             className="bg-[#1f1f2e]/80 backdrop-blur-lg p-6 rounded-2xl border border-[#2a2a40] shadow-[0_0_25px_rgba(147,112,219,0.3)]"
           >
             <h2 className="text-xl font-serif mb-4 text-indigo-300">🌙 Celestial Balance</h2>
-            <AdherenceChart medications={medications} />
+            <AdherenceChart medications={medications} api={api} />
           </motion.div>
         </div>
 
@@ -436,6 +436,3 @@ export default DashboardPage;
 // };
 
 // export default DashboardPage;
-
-
-  
