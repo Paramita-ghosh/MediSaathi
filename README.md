@@ -12,13 +12,13 @@ The free Render backend may take up to a minute to wake after inactivity.
 
 ## Features
 
-- JWT-based registration, login, and protected routes
+- JWT-based registration, OTP email verification, login, and protected routes
 - Add, update, delete, and view user medications
 - Multiple dose times with a 10-minute missed-dose grace period
 - Dose history and visual adherence analytics
 - Medication reminder and confirmation emails
 - Streak tracking and achievement badges
-- Nearby doctor and clinic discovery within 5 km using OpenStreetMap
+- Nearby doctor and clinic discovery within 20 km using OpenStreetMap
 - Controlled doctor-specialty mapping with General Physician as the safe fallback
 - Community posts with likes, Gemini summaries, and sentiment analysis
 - Responsive React dashboard

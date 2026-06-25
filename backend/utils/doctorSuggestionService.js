@@ -1,7 +1,7 @@
 import axios from "axios";
 import { getDoctorSpecialtyForMedication } from "./geminiService.js";
 
-const DEFAULT_RADIUS_METERS = 5000;
+const DEFAULT_RADIUS_METERS = 20000;
 const OVERPASS_API_URL = "https://overpass-api.de/api/interpreter";
 
 const buildMapSearchUrl = ({ specialty, latitude, longitude }) => {
@@ -9,8 +9,7 @@ const buildMapSearchUrl = ({ specialty, latitude, longitude }) => {
     return `https://www.openstreetmap.org/#map=14/${latitude}/${longitude}`;
   }
 
-  const query = encodeURIComponent(specialty);
-  return `https://www.openstreetmap.org/search?query=${query}`;
+  return null;
 };
 
 const buildOsmPlaceUrl = ({ latitude, longitude }) => {

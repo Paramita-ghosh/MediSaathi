@@ -1,7 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Sparkles, Star, Zap } from "lucide-react";
-import { Link } from "react-router-dom";
 
 const About = () => {
   return (
@@ -70,22 +69,14 @@ const About = () => {
           transition={{ delay: 0.6 }}
           className="flex justify-center gap-6 mt-6"
         >
-          <motion.a
-            href="/"
-            whileHover={{ scale: 1.1, textShadow: "0px 0px 8px #fff" }}
-            className="px-6 py-3 rounded-full bg-linear-to-r from-accent to-purple-500 text-white font-semibold shadow-lg hover:shadow-accent/40 transition-all duration-300"
-          >
-            Explore More
-          </motion.a>
-
-          <Link
-            to="/contact"
+          <a
+            href="/contact"
             className="px-6 py-3 rounded-full border border-purple-500 text-purple-400 font-semibold 
                         hover:bg-purple-600 hover:text-white transition-all duration-300 
                         shadow-lg hover:shadow-purple-500/40 backdrop-blur-sm"
             >
             Contact Us
-          </Link>
+          </a>
         </motion.div>
       </motion.div>
 

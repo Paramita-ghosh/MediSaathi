@@ -60,15 +60,17 @@ const DoctorSuggestionCard = ({ suggestion }) => {
         </div>
       )}
 
-      <a
-        href={suggestion.mapsSearchUrl}
-        target="_blank"
-        rel="noreferrer"
-        className="mt-4 inline-flex items-center gap-2 rounded-lg bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950 transition-colors hover:bg-cyan-300"
-      >
-        Open in Map
-        <ExternalLink className="h-4 w-4" />
-      </a>
+      {suggestion.mapsSearchUrl && (
+        <a
+          href={suggestion.mapsSearchUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-4 inline-flex items-center gap-2 rounded-lg bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950 transition-colors hover:bg-cyan-300"
+        >
+          Open nearby map
+          <ExternalLink className="h-4 w-4" />
+        </a>
+      )}
 
       <p className="mt-3 text-xs text-gray-400">{suggestion.disclaimer}</p>
     </div>
