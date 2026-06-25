@@ -213,7 +213,7 @@ const SchedulePage = () => {
                 </div>
               </div>
               {/* Rest of your form stays unchanged */}
-              <div>
+              <div className="min-w-0 flex-1">
                 <label className="block text-sm font-medium text-text-secondary mb-1">Frequency of Ritual</label>
                 <select value={frequency} onChange={e => setFrequency(e.target.value)} className="input-style">
                   <option>Daily</option>
@@ -281,6 +281,11 @@ const SchedulePage = () => {
                   <FaClock />
                   <span className="text-sm text-text-secondary">{med.times.join(', ')}</span>
                 </div>
+                {med.doctorSuggestion && (
+                  <div className="mt-4">
+                    <DoctorSuggestionCard suggestion={med.doctorSuggestion} />
+                  </div>
+                )}
               </div>
               <div className="flex gap-4">
                 <button onClick={() => handleDelete(med._id)} className="text-text-secondary hover:text-red-500 transition-colors" aria-label="Delete">

@@ -1,83 +1,62 @@
-import React, { createContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { createContext, useEffect, useState } from 'react';
+import { apiClient } from '../api/client';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const api = apiClient;
 
-  const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL,
-  });
-
-  React.useEffect(() => {
+  useEffect(() => {
     if (user) {
-      const persistedUser = { ...user };
-      localStorage.setItem('userInfo', JSON.stringify(persistedUser));
+      localStorage.setItem('userInfo', JSON.stringify(user));
     }
   }, [user]);
 
-  api.interceptors.request.use((config) => {
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  });
-  
   useEffect(() => {
     const token = localStorage.getItem('authToken');
-    if (token) {
-      api.get('/api/auth/profile')
-        .then(response => {
-          setUser(response.data);
-        })
-        .catch(() => {
-          // Token is invalid
-          localStorage.removeItem('authToken');
-          setUser(null);
-        })
-        .finally(() => setLoading(false));
-    } else {
+
+    if (!token) {
       setLoading(false);
+      return;
     }
-  }, []);
 
-  // const login = async (email, password) => {
-  //   const { data } = await api.post('/api/auth/login', { email, password });
-  //   localStorage.setItem('authToken', data.token);
-  //   const profileRes = await api.get('/api/auth/profile');
-  //   setUser(profileRes.data);
-  // };
+    api
+      .get('/api/auth/profile')
+      .then((response) => {
+        setUser({ ...response.data, token });
+      })
+      .catch(() => {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userInfo');
+        setUser(null);
+      })
+      .finally(() => setLoading(false));
+  }, [api]);
 
-  const login = async (email, password) => {
-      const { data } = await api.post('/api/auth/login', { email, password });
-      localStorage.setItem('authToken', data.token);
-
-      const profileRes = await api.get('/api/auth/profile');
-      const fullUser = { ...profileRes.data, token: data.token };
-
-      // ✅ Store full user info (so AdherenceChart can use it)
-      localStorage.setItem('userInfo', JSON.stringify(fullUser));
-      setUser(fullUser);
+  const persistSession = async (token) => {
+    localStorage.setItem('authToken', token);
+    const profileRes = await api.get('/api/auth/profile');
+    const fullUser = { ...profileRes.data, token };
+    localStorage.setItem('userInfo', JSON.stringify(fullUser));
+    setUser(fullUser);
+    return fullUser;
   };
 
-  
-  // const register = async (name, email, password) => {
-  //     const { data } = await api.post('/api/auth/register', { name, email, password });
-  //     localStorage.setItem('authToken', data.token);
-  //     setUser({_id: data._id, name: data.name, email: data.email});
-  // };
+  const login = async (email, password) => {
+    const { data } = await api.post('/api/auth/login', { email, password });
+    return persistSession(data.token);
+  };
 
   const register = async (name, email, password) => {
     const { data } = await api.post('/api/auth/register', { name, email, password });
-    localStorage.setItem('authToken', data.token);
-    const fullUser = { _id: data._id, name: data.name, email: data.email, token: data.token };
+    return data;
+  };
 
-    // ✅ Store full user info
-    localStorage.setItem('userInfo', JSON.stringify(fullUser));
-    setUser(fullUser);
+  const verifyRegistration = async (email, otp) => {
+    const { data } = await api.post('/api/auth/verify-registration', { email, otp });
+    return persistSession(data.token);
   };
 
   const logout = () => {
@@ -87,11 +66,12 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, register, loading, api, setUser }}>
+    <AuthContext.Provider
+      value={{ user, login, logout, register, verifyRegistration, loading, api, setUser }}
+    >
       {!loading && children}
     </AuthContext.Provider>
   );
 };
 
 export default AuthContext;
-

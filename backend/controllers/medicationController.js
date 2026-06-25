@@ -77,6 +77,8 @@ const createMedication = asyncHandler(async (req, res) => {
       latitude,
       longitude,
     });
+    createdMedication.doctorSuggestion = response.doctorSuggestion;
+    await createdMedication.save();
   } catch (error) {
     console.error('Failed to create doctor suggestion:', error);
   }

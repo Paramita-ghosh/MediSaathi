@@ -161,7 +161,6 @@
 import React, { useState, useRef, useEffect, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, User, Bot, Loader2 } from 'lucide-react';
-import axios from 'axios';
 import toast from 'react-hot-toast';
 import AuthContext from '../../context/AuthContext';
 
@@ -176,7 +175,7 @@ const Chatbot = () => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
-  const { user } = useContext(AuthContext);
+  const { api } = useContext(AuthContext);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -196,14 +195,7 @@ const Chatbot = () => {
     setIsLoading(true);
 
     try {
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${user?.token}`,
-        },
-      };
-
-      const { data } = await axios.post('/api/chat/generate', { prompt: input }, config);
+      const { data } = await api.post('/api/chat/generate', { prompt: input });
       const aiMessage = { role: 'model', content: data.response };
       setMessages((prev) => [...prev, aiMessage]);
     } catch (error) {

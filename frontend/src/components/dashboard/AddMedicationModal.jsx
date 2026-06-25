@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Pill, Clock, Calendar } from 'lucide-react';
 import toast from 'react-hot-toast';
-import axios from 'axios';
+import { apiClient } from '../../api/client';
 
 const getCurrentLocation = () =>
   new Promise((resolve) => {
@@ -22,7 +22,7 @@ const getCurrentLocation = () =>
     );
   });
 
-const AddMedicationModal = ({ token, onClose, onMedicationAdded }) => {
+const AddMedicationModal = ({ onClose, onMedicationAdded }) => {
   const [name, setName] = useState('');
   const [dosage, setDosage] = useState('');
   const [frequency, setFrequency] = useState('daily');
@@ -33,9 +33,6 @@ const AddMedicationModal = ({ token, onClose, onMedicationAdded }) => {
     const toastId = toast.loading('Adding your potion...');
 
     try {
-      const config = {
-        headers: { Authorization: `Bearer ${token}` },
-      };
       const location = await getCurrentLocation();
       const medicationData = {
         name,
@@ -45,7 +42,7 @@ const AddMedicationModal = ({ token, onClose, onMedicationAdded }) => {
         ...location,
       };
 
-      const { data } = await axios.post('/api/medications', medicationData, config);
+      const { data } = await apiClient.post('/api/medications', medicationData);
       
       toast.success('New potion added!', { id: toastId });
       if (data.doctorSuggestion?.specialty) {

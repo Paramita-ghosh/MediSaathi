@@ -67,6 +67,22 @@ export const sendMedicationConfirmation = async (
   }
 };
 
+export const sendVerificationOtp = async (userEmail, userName, otp) => {
+  const subject = 'Verify your MediSaathi account';
+  const html = `
+    <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+      <h2 style="color: #0d9488;">Hello, ${userName}!</h2>
+      <p>Use this OTP to verify your MediSaathi account:</p>
+      <p style="font-size: 28px; letter-spacing: 6px; font-weight: bold; color: #111827;">${otp}</p>
+      <p>This OTP expires in 10 minutes.</p>
+      <p>If you did not request this, you can ignore this email.</p>
+      <p><strong>The MediSaathi Team</strong></p>
+    </div>
+  `;
+
+  await sendEmail({ to: userEmail, subject, html });
+};
+
 export const sendReminderEmail = async (
   userEmail,
   userName,

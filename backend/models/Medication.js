@@ -30,6 +30,9 @@ const medicationSchema = mongoose.Schema(
         status: { type: String, enum: ['taken', 'missed', 'scheduled'], default: 'scheduled' },
       },
     ],
+    doctorSuggestion: {
+      type: mongoose.Schema.Types.Mixed,
+    },
   },
   {
     timestamps: true,
